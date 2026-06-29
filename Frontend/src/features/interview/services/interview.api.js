@@ -10,7 +10,7 @@ const api = axios.create({
  * @description Service to generate interview report by sending job description, self description and resume file to backend
  */
 
-export const generateInterviewReport = async (jobDescription, selfDescription, resumeFile) => {
+export const generateInterviewReport = async ({jobDescription, selfDescription, resumeFile}) => {
     
     const formData = new FormData();
 

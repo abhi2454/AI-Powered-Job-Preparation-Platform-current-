@@ -1,8 +1,33 @@
-import React from 'react'
+import React,{useState, useRef} from 'react'
 import "../style/home.scss"
-
+import { useInterview } from '../hooks/useInterview'
+import { useNavigate } from 'react-router'
 
 const Home = () => {
+    
+    const {loading, generateReport} = useInterview()
+    const [jobDescription, setJobDescription] = useState("")
+    const [selfDescription, setSelfDescription] = useState("")
+    const resumeInputRef = useRef()
+
+    const navigate = useNavigate()
+
+
+    const handleGenerateReport = async () => {
+        const resumeFile = resumeInputRef.current.files[0]
+
+        const data = await generateReport({jobDescription, selfDescription, resumeFile})
+        navigate(`/interview/${data._id}`)
+    }
+
+    if(loading) {
+        return (
+            <main className='loading-screen'>
+                <h1>Loading your interview plan...</h1>
+            </main>
+        )
+    }
+
   return (
         <main className='home'>
             <section className='home-shell'>
@@ -45,6 +70,7 @@ const Home = () => {
 
                             <div className='textarea-wrap large'>
                                 <textarea
+                                    onChange={(e) =>{setJobDescription(e.target.value)}}
                                     name='jobDescription'
                                     id='jobDescription'
                                     maxLength={5000}
@@ -84,7 +110,7 @@ e.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScri
                                 <p className='field-label'>
                                     Upload Resume <span className='badge badge-inline'>Best Results</span>
                                 </p>
-                                <input hidden type='file' name='resume' id='resume' accept='.pdf,.doc,.docx' />
+                                <input ref= {resumeInputRef} hidden type='file' name='resume' id='resume' accept='.pdf,.doc,.docx' />
                                 <label className='dropzone' htmlFor='resume'>
                                     <span className='dropzone-icon' aria-hidden='true'>
                                         <svg viewBox='0 0 24 24' fill='none' role='presentation'>
@@ -115,6 +141,7 @@ e.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScri
                                 <p className='field-label'>Quick Self-Description</p>
                                 <div className='textarea-wrap'>
                                     <textarea
+                                        onChange={(e) =>{setSelfDescription(e.target.value)}}
                                         name='selfDescription'
                                         id='selfDescription'
                                         placeholder="Briefly describe your experience, key skills, and years of experience if you don't have a resume handy..."
@@ -130,7 +157,9 @@ e.g. 'Senior Frontend Engineer at Google requires proficiency in React, TypeScri
 
                     <footer className='card-footer'>
                         <p>AI-Powered Strategy Generation · Approx 30s</p>
-                        <button type='button' className='generate-btn'>
+                        <button 
+
+                            type='button' className='generate-btn' onClick={handleGenerateReport}>
                             Generate My Interview Strategy
                         </button>
                     </footer>

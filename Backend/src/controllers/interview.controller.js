@@ -6,31 +6,47 @@ const interviewReportModel = require("../models/interviewReport.model")
  * @description generate new interview report on the basis of user self description ,resume pdf and job description
  */
 
-async function generateInterviewReportController(req,res) {
+async function generateInterviewReportController(req, res) {
+    try {
 
-    const resumeContent = await  (new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))).getText();
+        console.log("File:", req.file);
+        console.log("Body:", req.body);
+        console.log("User:", req.user);
 
-    const {selfDescription, jobDescription} = req.body
+        const resumeContent = await (
+            new pdfParse.PDFParse(Uint8Array.from(req.file.buffer))
+        ).getText();
 
-    const interviewReportByAi = await generateInterviewReport({
-        resume: resumeContent.text,
-        selfDescription,
-        jobDescription,
-    })
+        const { selfDescription, jobDescription } = req.body;
 
-    const interviewReport = await interviewReportModel.create({
-        user: req.user.id,
-        resume: resumeContent.text,
-        selfDescription,
-        jobDescription,
-        ...interviewReportByAi
-    })
+        const interviewReportByAi = await generateInterviewReport({
+            resume: resumeContent.text,
+            selfDescription,
+            jobDescription,
+        });
 
-    res.status(201).json({
-        message: "Interview Report generated successfully",
-        interviewReport
-    })
+        console.log("AI Response:", interviewReportByAi);
 
+        const interviewReport = await interviewReportModel.create({
+            user: req.user.id,
+            resume: resumeContent.text,
+            selfDescription,
+            jobDescription,
+            ...interviewReportByAi,
+        });
+
+        return res.status(201).json({
+            message: "Interview Report generated successfully",
+            interviewReport,
+        });
+
+    } catch (err) {
+        console.error("ERROR:", err);
+
+        return res.status(500).json({
+            message: err.message,
+        });
+    }
 }
 
 
